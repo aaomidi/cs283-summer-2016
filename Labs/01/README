@@ -1,0 +1,9 @@
+All of the questions for this lab is in one file, main.cpp.
+The timing of part 5 of the assignment is done inside C++ itself.
+
+Compilation:
+make compile
+make run
+
+Cleanup:
+make clean
