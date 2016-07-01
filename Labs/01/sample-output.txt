@@ -1,0 +1,91 @@
+./Lab1.o
+Starting part one.
+Settings numbers:
+0. 1804289383
+1. 846930886
+2. 1681692777
+3. 1714636915
+4. 1957747793
+5. 424238335
+6. 719885386
+7. 1649760492
+8. 596516649
+9. 1189641421
+Printing numbers:
+0. 1804289383
+1. 846930886
+2. 1681692777
+3. 1714636915
+4. 1957747793
+5. 424238335
+6. 719885386
+7. 1649760492
+8. 596516649
+9. 1189641421
+	Part one finished.
+Starting part two.
+Initializing strings.
+Reading strings
+String #0
+String #1
+String #2
+String #3
+String #4
+String #5
+String #6
+String #7
+String #8
+String #9
+	Part two finished.
+Starting part three.
+Before sort
+0. 1025202362
+1. 783368690
+2. -2044897763
+3. -1365180540
+4. -304089172
+5. -35005211
+6. 294702567
+7. -336465782
+After sort
+0. -2044897763
+1. -1365180540
+2. -336465782
+3. -304089172
+4. -35005211
+5. 294702567
+6. 783368690
+7. 1025202362
+	Part three finished.
+Starting part four.
+Before sort
+278722862
+2145174067
+-1101513929
+-1315634022
+After sort
+-1315634022
+-1101513929
+278722862
+2145174067
+	Part four finished.
+Starting part five.
+1. 2
+2. 4
+3. 5
+4. 6
+Removing second element
+1. 2
+2. 5
+3. 6
+Number in 3rd spot: 6
+Added element 8
+1. 2
+2. 5
+3. 6
+4. 8
+Starting timing test
+Testing by just extending the array by one for a sample size of 10000000 elements took 164 milliseconds.
+Cleaning up and starting second test
+Testing by extending the array to 2 x currentSize for a sample size of 10000000 elements took 87 milliseconds.
+	Part five finished.
