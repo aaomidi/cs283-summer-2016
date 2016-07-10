@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include<string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "hash.h"
 
 int sameString(char *s1, char *s2) {
@@ -32,9 +33,51 @@ int sameString(char *s1, char *s2) {
     return 1;
 }
 
-int main() {
+void anagram(char *w, hashtable_t *table) {
+
+    unsigned short hash = create_hash(w);
+
+    printf("Finding all Anagrams for %s\n", w);
+    entry_t *entry = table->values[hash];
+    if (entry == NULL) {
+        printf("None found.\n");
+        return;
+    }
+    int i = 0;
+    while (entry != NULL) {
+        if ((sameString(w, entry->value) == 1) &&
+            (strcasecmp(w, entry->value) != 0)) {
+            printf("%d. %s\n", ++i, entry->value);
+        }
+        entry = entry->next;
+    }
+    return;
+}
+
+void scrabble(char *w, char l, int pos, hashtable_t *table) {
+
+    unsigned short hash = create_hash(w);
+
+    printf("Finding all possible scrabble values for %s\n", w);
+    entry_t *entry = table->values[hash];
+    if (entry == NULL) {
+        printf("None found.\n");
+        return;
+    }
+    int i = 0;
+    while (entry != NULL) {
+        if ((sameString(w, entry->value) == 1) &&
+            (strcasecmp(w, entry->value) != 0) &&
+            ((tolower(entry->value[pos]) == tolower(l)))) {
+            printf("%d. %s\n", ++i, entry->value);
+        }
+        entry = entry->next;
+    }
+    return;
+}
+
+int main(int argc, char *argv[]) {
     FILE *dict = fopen("/usr/share/dict/words", "r");
-    //FILE *dict = fopen("D:\\Dropbox\\College\\Summer 2016\\CS283\\Project\\Assignments\\01\\words", "r");
 
     if (dict == NULL) {
         printf("Error occurred. Dictionary was null.\n");
@@ -48,20 +91,40 @@ int main() {
         entry_t *e = create_newpair(hash, word);
         insert(table, e);
     }
-
-    char *w = "Amir";
-    unsigned short hash = create_hash(w);
-    printf("%d\n", hash);
-    entry_t *entry = table->values[hash];
-    if (entry == NULL) {
-        printf("None found.\n");
-        return 0;
-    }
-    while (entry != NULL) {
-        if (sameString(w, entry->value) == 1 && (strcasecmp(w, entry->value) != 0)) {
-            printf("%s\n", entry->value);
+    //free(word);
+    switch (argc) {
+        case 2: {
+            char *option = argv[1];
+            if (option == "-a") { // if Anagram
+                anagram("Amir", table);
+            } else {
+                scrabble("Amir", 'm', 0, table);
+            }
+            break;
         }
-        entry = entry->next;
+        case 3: {
+            char *option = argv[1];
+            if (strcmp("-a", option) == 0) { // if Anagram
+                anagram(argv[2], table);
+            } else { //Scrabble
+                scrabble("Amir", 'm', 0, table);
+            }
+            break;
+        }
+        case 5: {
+            char *option = argv[1];
+            char letter = argv[3][0];
+            int position = atoi(argv[4]);
+            if (strcmp("-a", option) == 0) { // if Anagram
+                anagram(argv[2], table);
+            } else { //Scrabble
+                scrabble(argv[2], letter, position, table);
+            }
+            break;
+        }
+        default:
+            anagram("Amir", table);
+            scrabble("Amir", 'm', 0, table);
+            break;
     }
-    return 0;
 }
