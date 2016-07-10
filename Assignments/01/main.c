@@ -39,10 +39,7 @@ void anagram(char *w, hashtable_t *table) {
 
     printf("Finding all Anagrams for %s\n", w);
     entry_t *entry = table->values[hash];
-    if (entry == NULL) {
-        printf("None found.\n");
-        return;
-    }
+
     int i = 0;
     while (entry != NULL) {
         if ((sameString(w, entry->value) == 1) &&
@@ -50,6 +47,10 @@ void anagram(char *w, hashtable_t *table) {
             printf("%d. %s\n", ++i, entry->value);
         }
         entry = entry->next;
+    }
+
+    if (i == 0) {
+        printf("None found.\n");
     }
     return;
 }
@@ -60,10 +61,7 @@ void scrabble(char *w, char l, int pos, hashtable_t *table) {
 
     printf("Finding all possible scrabble values for %s with %c at %d\n", w, l, pos);
     entry_t *entry = table->values[hash];
-    if (entry == NULL) {
-        printf("None found.\n");
-        return;
-    }
+
     int i = 0;
     while (entry != NULL) {
         if ((sameString(w, entry->value) == 1) &&
@@ -72,6 +70,9 @@ void scrabble(char *w, char l, int pos, hashtable_t *table) {
             printf("%d. %s\n", ++i, entry->value);
         }
         entry = entry->next;
+    }
+    if (i == 0) {
+        printf("None found.\n");
     }
     return;
 }
@@ -127,4 +128,5 @@ int main(int argc, char *argv[]) {
             scrabble("Amir", 'm', 0, table);
             break;
     }
+    return 0;
 }
