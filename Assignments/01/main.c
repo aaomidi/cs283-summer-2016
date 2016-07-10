@@ -58,7 +58,7 @@ void scrabble(char *w, char l, int pos, hashtable_t *table) {
 
     unsigned short hash = create_hash(w);
 
-    printf("Finding all possible scrabble values for %s\n", w);
+    printf("Finding all possible scrabble values for %s with %c at %d\n", w, l, pos);
     entry_t *entry = table->values[hash];
     if (entry == NULL) {
         printf("None found.\n");
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
     switch (argc) {
         case 2: {
             char *option = argv[1];
-            if (option == "-a") { // if Anagram
+            if (strcmp("-a", option) == 0) { // if Anagram
                 anagram("Amir", table);
             } else {
                 scrabble("Amir", 'm', 0, table);
