@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc -g
 build: Assignment1.o
 	echo "Building"
 

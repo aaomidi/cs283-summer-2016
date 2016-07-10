@@ -19,6 +19,7 @@ typedef struct hashtable_s hashtable_t;
 
 hashtable_t *create_ht();
 entry_t *create_newpair(short key, char *value);
+char* cleanstring(char* s);
 void insert(hashtable_t *table, entry_t *entry);
 unsigned short create_hash(char *string);
 #endif //INC_01_HASH_H

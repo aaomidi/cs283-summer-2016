@@ -2,7 +2,9 @@
 #include<string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "hash.h"
+
 
 int sameString(char *s1, char *s2) {
     int i, j;
@@ -77,6 +79,16 @@ void scrabble(char *w, char l, int pos, hashtable_t *table) {
     return;
 }
 
+void freeList(entry_t *entry) {
+    entry_t *tmp;
+    while (entry != NULL) {
+        tmp = entry;
+        entry = entry->next;
+        free(tmp->value);
+        free(tmp);
+    }
+}
+
 int main(int argc, char *argv[]) {
     FILE *dict = fopen("/usr/share/dict/words", "r");
 
@@ -89,10 +101,12 @@ int main(int argc, char *argv[]) {
 
     while (fgets(word, sizeof(word), dict) != NULL) {
         unsigned short hash = create_hash(word);
-        entry_t *e = create_newpair(hash, word);
+        char *s = cleanstring(word);
+        entry_t *e = create_newpair(hash, s);
+        free(s);
         insert(table, e);
     }
-    //free(word);
+
     switch (argc) {
         case 2: {
             char *option = argv[1];
@@ -128,5 +142,15 @@ int main(int argc, char *argv[]) {
             scrabble("Amir", 'm', 0, table);
             break;
     }
+
+    // Clean up after ourselves.
+    int i;
+    for (i = 0; i < USHRT_MAX; i++) {
+        if (table->values[i] == NULL) continue;
+        //Cleans the linked list.
+        freeList(table->values[i]);
+    }
+    free(table->values);
+    free(table);
     return 0;
 }

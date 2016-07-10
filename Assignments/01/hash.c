@@ -60,10 +60,6 @@ unsigned short create_hash(char *string) {
     int i = 0;
     unsigned short res = 0;
     for (; i < strlen(string); i++) {
-        if (string[i] == '\n') {
-            string[i] = '\0';
-            break;
-        }
         unsigned int val = (unsigned int) string[i];
         if (val > 64 && val < 91) { // Between A-Z
             val -= 64;
@@ -76,4 +72,17 @@ unsigned short create_hash(char *string) {
 
     }
     return res;
+}
+
+char *cleanstring(char *s) {
+    int i = 0;
+    char *string = strdup(s);
+
+    for (; i < strlen(string); i++) {
+        if (string[i] == '\n') {
+            string[i] = '\0';
+            break;
+        }
+    }
+    return string;
 }
