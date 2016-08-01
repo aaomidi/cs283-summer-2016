@@ -14,9 +14,8 @@
  * @param filenames		A list of strings of the filenames to load
  */
 IplImage **loadImages(int numImages, char **fileNames) {
-    IplImage **rv; // the return result
-    int i; // used for looping
-    printf("Called2\n\n");
+    IplImage **rv;
+    int i;
 
     if (NULL == (rv = malloc(numImages * (sizeof(IplImage *))))) {
         fprintf(stderr, "Not enough memory.\n");
@@ -25,14 +24,14 @@ IplImage **loadImages(int numImages, char **fileNames) {
 
     for (i = 0; i < numImages; i++) {
         char *fileName = fileNames[i];
-        void *img = cvLoad(fileName, NULL, NULL, NULL);
+
+        void *img = cvLoadImage(fileName, 1);
         if (img == NULL) {
             fprintf(stderr, "Could not load image %s\n", fileName);
             return NULL;
         }
         rv[i] = img;
     }
-    printf("Called\n\n");
     return rv;
 }
 
@@ -52,14 +51,17 @@ IplImage **loadImages(int numImages, char **fileNames) {
  * @returns		The euclidean distance between the two 3-d vectors
  */
 double colorDistance(CvScalar c1, CvScalar c2) {
-    double d = 0; // the result
-    int i; // an iterator
+    double d = 0;
+    int i;
 
-    // TODO: iterate over the dimensions and compute the sum
-
-    // TODO: return the square root of the result.
-    // If d is zero, just return 0.
-
+    for (i = 0; i < 3; i++) {
+        double v1 = c1.val[i];
+        double v2 = c2.val[i];
+        double val = v2 - v1;
+        d += pow(val, 2);
+    }
+    // sqrt(0) = 0
+    return sqrt(d);
 }
 
 /**
@@ -129,15 +131,15 @@ int findClosest(CvScalar t, CvScalar *scolors, int numColors) {
             i; // used to iterate
     double d, // stores the result of distance
             m = colorDistance(t, scolors[0]); // the current minimum distance
-    // TODO: iterate over scolors
+    for (i = 1; i < numColors; i++) {
+        d = colorDistance(t, scolors[i]);
+        if (d < m) {
+            rv = i; // Store result
+            m = d; // Store minimum value
+        }
+    }
 
-    // TODO: compute the distance between t and scolors[i]
-
-    // TODO: check if the distance is less then current minimum
-
-    // TODO: if it is, store i as the current result and cache the minimum distance
-
-    // TODO: return result.
+    return rv;
 }
 
 /**
@@ -150,14 +152,18 @@ int findClosest(CvScalar t, CvScalar *scolors, int numColors) {
  */
 CvScalar *getAvgColors(IplImage **images, int numImages) {
     CvScalar *rv;
+    if (NULL == (rv = malloc(sizeof(CvScalar) * numImages))) {
+        fprintf(stderr, "Not enough memory.\n");
+        exit(0);
+    }
+
     int i;
-    // TODO: create return vector
 
-    // TODO: iterate over images and compute average color
+    for (i = 0; i < numImages; i++) {
+        rv[i] = cvAvg(images[i], 0);
+    }
 
-    // TODO: for each image, compute the average color (hint: use cvAvg)
-
-    // TODO: return result
+    return rv;
 }
 
 /**
@@ -172,25 +178,34 @@ CvScalar *getAvgColors(IplImage **images, int numImages) {
  * @param numRows		Number of vertical cells
  */
 IplImage *stitchImages(IplImage **iclosest, int numColumns, int numRows) {
-    int j, // for iterating over the rows
-            i; // for iterating over the columns
+    int i, j, z;
 
-    // TODO: using cvGetSize, get the size of the first image in iclosest.
-    // remember all of the images should be the same size
+    CvSize size = cvGetSize(iclosest[0]);
 
-    // TODO: Compute the size of the final destination image.
+    int cellWidth = size.width;
+    int cellHeight = size.height;
 
-    // TODO: allocate the return image. This can be potentially large, so
-    // you should make sure the result is not null
+    int height = cellHeight * numRows;
+    int width = cellWidth * numColumns;
 
-    // TODO: iterate over each cell and copy the closest image into it
+    printf("Size: %dx%d\n", cellWidth, cellHeight);
+    printf("Size: %dx%d\n", numColumns, numRows);
+    printf("Size: %dx%d\n", width, height);
 
-    // TODO: set the ROI of the result
+    IplImage *dst;
+    if (NULL == (dst = malloc((sizeof(IplImage) * height * width)))) {
+        fprintf(stderr, "Not enough memory.\n");
+        exit(0);
+    }
+    z = 0;
+    for (i = 0; i < height; i += cellHeight) {
+        for (j = 0; j < width; j += cellWidth) {
+            cvSetImageROI(dst, cvRect(i, j, cellWidth, cellHeight));
+            cvCopy(iclosest[z], dst, NULL);
+            cvResetImageROI(dst);
+            z++;
+        }
+    }
 
-    // TODO: copy the proper image into the result
-
-    // TODO: reset the ROI of the result
-
-    // TODO: return the result
-
+    return dst;
 }
