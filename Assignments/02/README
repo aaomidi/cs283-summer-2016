@@ -1,0 +1,19 @@
+Assignment 2
+------------
+
+Amir Omidi
+Systems Programming
+Assignment 2
+email: aao53@drexel.edu
+
+
+In this assignment we were supposed to write a program that takes an image and produces a picture using small thumbnails. These images are picked according to their average color.
+
+With the use of the OpenCV library, we were able to achieve this goal.
+
+In order to run the program:
+
+```
+make main
+./h3wex INPUT.jpg 128 96 THUMBNAIL_DIR/*
+```
