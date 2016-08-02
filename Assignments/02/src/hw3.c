@@ -25,12 +25,12 @@ IplImage **loadImages(int numImages, char **fileNames) {
     for (i = 0; i < numImages; i++) {
         char *fileName = fileNames[i];
 
-        void *img = cvLoadImage(fileName, 1);
-        if (img == NULL) {
+        void *img = cvLoadImage(fileName, CV_LOAD_IMAGE_COLOR);
+        rv[i] = img;
+        if (rv[i] == NULL) {
             fprintf(stderr, "Could not load image %s\n", fileName);
             return NULL;
         }
-        rv[i] = img;
     }
     return rv;
 }
@@ -57,10 +57,14 @@ double colorDistance(CvScalar c1, CvScalar c2) {
     for (i = 0; i < 3; i++) {
         double v1 = c1.val[i];
         double v2 = c2.val[i];
+
         double val = v2 - v1;
+
         d += pow(val, 2);
     }
-    // sqrt(0) = 0
+    if (d == 0) {
+        return 0;
+    }
     return sqrt(d);
 }
 
@@ -127,10 +131,9 @@ IplImage **getSubImages(IplImage *src, int numColumns, int numRows) {
  * 					colorDistance( t, scolors[i]) for all i != result)
  */
 int findClosest(CvScalar t, CvScalar *scolors, int numColors) {
-    int rv = 0, // return value
-            i; // used to iterate
-    double d, // stores the result of distance
-            m = colorDistance(t, scolors[0]); // the current minimum distance
+    int rv = 0, i;
+    double d, m = colorDistance(t, scolors[0]);
+
     for (i = 1; i < numColors; i++) {
         d = colorDistance(t, scolors[i]);
         if (d < m) {
@@ -185,27 +188,21 @@ IplImage *stitchImages(IplImage **iclosest, int numColumns, int numRows) {
     int cellWidth = size.width;
     int cellHeight = size.height;
 
-    int height = cellHeight * numRows;
     int width = cellWidth * numColumns;
+    int height = cellHeight * numRows;
 
-    printf("Size: %dx%d\n", cellWidth, cellHeight);
-    printf("Size: %dx%d\n", numColumns, numRows);
-    printf("Size: %dx%d\n", width, height);
 
-    IplImage *dst;
-    if (NULL == (dst = malloc((sizeof(IplImage) * height * width)))) {
-        fprintf(stderr, "Not enough memory.\n");
-        exit(0);
-    }
+    IplImage *img = cvCreateImage(cvSize(width, height), iclosest[0]->depth, iclosest[0]->nChannels);
+
     z = 0;
     for (i = 0; i < height; i += cellHeight) {
         for (j = 0; j < width; j += cellWidth) {
-            cvSetImageROI(dst, cvRect(i, j, cellWidth, cellHeight));
-            cvCopy(iclosest[z], dst, NULL);
-            cvResetImageROI(dst);
+            cvSetImageROI(img, cvRect(j, i, cellWidth, cellHeight));
+            cvCopy(iclosest[z], img, NULL);
+            cvResetImageROI(img);
             z++;
         }
     }
 
-    return dst;
+    return img;
 }
