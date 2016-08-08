@@ -37,4 +37,5 @@ $RECYCLE.BIN/
 
 # Clion and C/C++
 *.o
+*.out
 CMakeLists.txt
