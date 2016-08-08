@@ -51,28 +51,37 @@ int main(int argc, char **argv) {
 
     int clientfd = Open_clientfd(host, port);
     char *m = "GET %s HTTP/1.1\r\nHost: %s\r\n\r\n";
+    //char *m = "GET %s HTTP/1.1 Host: %s\r\n";
     char *message = malloc(sizeof(char) * strlen(m) + strlen(file) + strlen(host) + 5);
     sprintf(message, m, file, host);
+
+    struct timeval tv;
+    tv.tv_sec = 1; // 1 second time out in reading.
+    tv.tv_usec = 0;
+    setsockopt(clientfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
 
     rio_t rio;
     char buf[MAXLINE];
     Rio_readinitb(&rio, clientfd);
     Rio_writen(clientfd, message, strlen(message));
-
     int i = 0;
     for (i = 0; i < 100000; i++) {
-        Rio_readlineb(&rio, buf, MAXLINE);
-
+        ssize_t len = rio_readlineb(&rio, buf, MAXLINE);
         if (strtol(buf, NULL, 16) != '\0') {
             continue;
         }
-
+        if (len == 0) {
+            break;
+        }
         if (strcmp(buf, "0\r\n") == 0) {
             break;
         }
 
-        Fputs(buf,stdout);
+        Fputs(buf, stdout);
+
+        //printf("%s",buf);
     }
+    Close(clientfd);
     free(host);
     free(file);
     return 0;
