@@ -1,6 +1,11 @@
 
 #include "csapp.h"
-
+/**
+ * Main method of program. It uses getopt to do CLI the Linux way.
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, char **argv) {
     int port = 80;
     char *host = NULL;
@@ -55,6 +60,7 @@ int main(int argc, char **argv) {
     char *message = malloc(sizeof(char) * strlen(m) + strlen(file) + strlen(host) + 5);
     sprintf(message, m, file, host);
 
+    // Timeouts
     struct timeval tv;
     tv.tv_sec = 1; // 1 second time out in reading.
     tv.tv_usec = 0;
@@ -65,9 +71,10 @@ int main(int argc, char **argv) {
     Rio_readinitb(&rio, clientfd);
     Rio_writen(clientfd, message, strlen(message));
     int i = 0;
+    // Keep reading with a maximum of 100K lines
     for (i = 0; i < 100000; i++) {
         ssize_t len = rio_readlineb(&rio, buf, MAXLINE);
-        if (strtol(buf, NULL, 16) != '\0') {
+        if (strtol(buf, NULL, 16) != '\0' && strlen(buf) < 5) {
             continue;
         }
         if (len == 0) {
@@ -77,11 +84,11 @@ int main(int argc, char **argv) {
             break;
         }
 
-        Fputs(buf, stdout);
 
-        //printf("%s",buf);
+        printf("%s",buf);
     }
     Close(clientfd);
+    // Free stuff used in memory
     free(host);
     free(file);
     return 0;
