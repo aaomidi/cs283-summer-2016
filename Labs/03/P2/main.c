@@ -6,6 +6,7 @@ regex_t regex;
 int reti;
 char msgbuf[100];
 int SIZE_FILE = 10000;
+
 /**
  * Handle the conection
  * @param connfd The connection file descriptor.
@@ -29,6 +30,8 @@ void handle(int connfd) {
             fileName = malloc(len * sizeof(char));
             memcpy(fileName, buf + pmatch[1].rm_so, len);
             fileName[pmatch[1].rm_eo] = '\0';
+        } else {
+            printf("NOT FOUND?!?!\n");
         }
         if (n <= 0) {
             break;
@@ -64,14 +67,32 @@ void handle(int connfd) {
 }
 
 int main(int argc, char **argv) {
-    reti = regcomp(&regex, ".* (\\/.*) .*", REG_EXTENDED); // Compile regex to read the input.
+    int port = 49861;
+
+    reti = regcomp(&regex, ".* (.*) .*", REG_EXTENDED); // Compile regex to read the input.
     if (reti) {
         fprintf(stderr, "Could not compile regex\n");
         exit(1);
     }
 
+    int c;
+    while ((c = getopt(argc, argv, "p:")) != -1) {
+        switch (c) {
+            case 'p': {
+                int p = atoi(optarg);
+                if (p < 0 || p > 65535) {
+                    fprintf(stderr, "Invalid port entered.\n Defaulting to %d.", port);
+                } else {
+                    port = p;
+                }
+                break;
+            }
+            default:
+                continue;
+        }
+    }
+
     int listenfd, connfd;
-    int port = 49861;
     socklen_t clientlen;
     struct sockaddr_storage clientaddr;
     listenfd = Open_listenfd(port);
