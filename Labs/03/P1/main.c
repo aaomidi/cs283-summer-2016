@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
             }
             case 'p': {
                 int p = atoi(optarg);
-                if (p < 0 || p > 65565) {
+                if (p < 0 || p > 65535) {
                     fprintf(stderr, "Invalid port entered.\n Defaulting to 80.");
                 } else {
                     port = p;
@@ -83,7 +83,6 @@ int main(int argc, char **argv) {
         if (strcmp(buf, "0\r\n") == 0) {
             break;
         }
-
 
         printf("%s",buf);
     }
