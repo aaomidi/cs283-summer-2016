@@ -29,9 +29,9 @@ void handle(int connfd) {
             size_t len = (size_t) (pmatch[1].rm_eo - pmatch[1].rm_so);
             fileName = malloc(len * sizeof(char));
             memcpy(fileName, buf + pmatch[1].rm_so, len);
-            fileName[pmatch[1].rm_eo] = '\0';
+            fileName[len] = '\0';
         } else {
-            printf("NOT FOUND?!?!\n");
+            //printf("NOT FOUND?!?!\n");
         }
         if (n <= 0) {
             break;
@@ -46,12 +46,12 @@ void handle(int connfd) {
     if (fileName == NULL) {
         strcat(msg, "NO FILE SPECIFIED.\n");
     } else {
-        printf("File name:%s\n", fileName);
+        printf("File name: %s\n", fileName);
+        int x = 0;
         FILE *fileWanted = fopen(fileName, "r");
         if (fileWanted == NULL) {
             strcat(msg, "FILE NOT FOUND.\n");
         } else {
-            printf("Am here\n");
             char word[256];
             while (fgets(word, sizeof(word), fileWanted) != NULL) {
                 rio_writen(connfd, word, strlen(word));
