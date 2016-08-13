@@ -11,6 +11,6 @@
     </parent>
 
     <artifactId>MiniRSA</artifactId>
-
+    <groupId>com.aaomidi.jchat.minirsa</groupId>
 
 </project>

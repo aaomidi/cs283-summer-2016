@@ -1,6 +1,6 @@
 package com.aaomidi.jchat.chat.data;
 
-import com.aaomidi.jchat.minirsa.RSA;
+import com.aaomidi.jchat.minirsa.api.RSA;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.aaomidi.jchat</groupId>
+            <groupId>com.aaomidi.jchat.minirsa</groupId>
             <artifactId>MiniRSA</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

@@ -24,6 +24,11 @@ public class ChatClient {
         }
     }
 
+    /**
+     * Connect and create a client.
+     *
+     * @throws Exception
+     */
     public void create() throws Exception {
         workerGroup = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();

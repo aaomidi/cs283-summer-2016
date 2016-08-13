@@ -4,8 +4,8 @@ import com.aaomidi.jchat.chat.data.Configuration;
 import com.aaomidi.jchat.chat.data.Message;
 import com.aaomidi.jchat.chat.engine.ChatClient;
 import com.aaomidi.jchat.chat.engine.ChatServer;
-import com.aaomidi.jchat.minirsa.MiniRSA;
-import com.aaomidi.jchat.minirsa.RSA;
+import com.aaomidi.jchat.minirsa.api.MiniRSA;
+import com.aaomidi.jchat.minirsa.api.RSA;
 import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,25 +33,36 @@ public class Main {
     }
 
     public Main(String... args) {
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
         final Main instance = this;
-        Integer bindNumber = Integer.valueOf(args[0]);
-        Integer portNumber = Integer.valueOf(args[1]);
+        Integer bindNumber = Integer.valueOf(args[0]); // Server bound port
+        Integer portNumber = Integer.valueOf(args[1]); // Other person's server
+        String serverAddress = args[2]; // Server address,
+        loadConfig(bindNumber, portNumber, serverAddress);
 
-        Integer v1 = Integer.valueOf(args[2]);
-        Integer v2 = Integer.valueOf(args[3]);
-        loadConfig(bindNumber, portNumber);
+        if (args.length == 5) {
+            Integer v1 = Integer.valueOf(args[3]); // Private key generation nth Prime
+            Integer v2 = Integer.valueOf(args[4]); // Private key generation mth Prime
+            rsa = new RSA(MiniRSA.nthPrime(v1), MiniRSA.nthPrime(v2));
+        } else {
+            Integer PRIME1 = Integer.valueOf(args[3]); // A
+            Integer C = Integer.valueOf(args[4]); // C
+            Integer E = Integer.valueOf(args[5]); // E
 
-        rsa = new RSA(MiniRSA.nthPrime(v1), MiniRSA.nthPrime(v2));
-
+            rsa = new RSA(PRIME1, C, E);
+        }
         chatServer = new ChatServer(instance);
+
+        System.out.printf("Server constructed. Please press enter to connect to %s:%d\n", getLoadedConfiguration().getServerAddress(), getLoadedConfiguration().getPortNumber());
         try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
+            in.readLine(); // Wait for one line
+        } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.printf("Client connected. You can type \"quit\" to stop chatting.%n");
         chatClient = new ChatClient(instance);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         for (; ; ) {
             String line = null;
             try {
@@ -68,11 +79,19 @@ public class Main {
             chatClient.sendMessage(gson.toJson(msg, Message.class));
         }
 
+        chatClient.shutdown();
+        chatServer.shutDown();
+
     }
 
-
-    public void loadConfig(int bindNumber, int portNumber) {
+    /**
+     * Loads a "fake" configuration file.
+     *
+     * @param bindNumber IP of the server to bind to.
+     * @param portNumber IP of the server to connect to
+     */
+    public void loadConfig(int bindNumber, int portNumber, String serverAddress) {
         // TODO: Load configuration from a file.
-        this.loadedConfiguration = new Configuration(bindNumber, portNumber);
+        this.loadedConfiguration = new Configuration(bindNumber, portNumber, serverAddress);
     }
 }

@@ -1,4 +1,4 @@
-package com.aaomidi.jchat.minirsa;
+package com.aaomidi.jchat.minirsa.api;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -7,6 +7,7 @@ import java.util.Random;
 
 public class MiniRSA {
     private static List<Long> primes = new ArrayList<>();
+    // For security based applications, SecureRandom is best.
     private static SecureRandom random = new SecureRandom();
 
     static {
@@ -14,6 +15,12 @@ public class MiniRSA {
         primes.add((long) 3);
     }
 
+    /**
+     * Finds coprime of a number.
+     *
+     * @param x
+     * @return
+     */
     public static long coprime(long x) {
         while (true) {
             long num = nextLong(random, x);
@@ -23,10 +30,26 @@ public class MiniRSA {
         }
     }
 
+    /**
+     * Encrypt and decrypt a character.
+     *
+     * @param m
+     * @param key
+     * @param c
+     * @return
+     */
     public static long endecrypt(char m, long key, long c) {
         return modulo(m, key, c);
     }
 
+    /**
+     * GCD of two numbers.
+     * Euclid's Algorithm
+     *
+     * @param a
+     * @param b
+     * @return
+     */
     public static long gcd(long a, long b) {
         long x, y;
         x = (a > b) ? a : b;
@@ -40,19 +63,34 @@ public class MiniRSA {
         }
     }
 
+    /**
+     * Inverse of a mod.
+     *
+     * @param base
+     * @param m
+     * @return
+     */
     public static long modInverse(long base, long m) {
         long exp = totient(m) - 1;
         return modulo(base, exp, m);
     }
 
+    /**
+     * Modulo of numbers.
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     */
     public static long modulo(long a, long b, long c) {
         long i;
-        long now = 1;
+        long temp = 1;
         for (i = 1; i <= b; i++) {
-            now *= a;
-            now = now % c;
+            temp *= a;
+            temp = temp % c;
         }
-        return now;
+        return temp;
     }
 
     public static long totient(long n) {
@@ -65,6 +103,12 @@ public class MiniRSA {
         return tot;
     }
 
+    /**
+     * Gets the nth prime.
+     *
+     * @param n
+     * @return
+     */
     public static long nthPrime(int n) {
         int size = primes.size();
         if (size > n) {
@@ -83,6 +127,12 @@ public class MiniRSA {
         return primes.get(n);
     }
 
+    /**
+     * Checks if a number is prime.
+     *
+     * @param x
+     * @return
+     */
     public static boolean isPrime(long x) {
         for (long prime : primes) {
             if (prime > x / 2) return true;
@@ -90,7 +140,7 @@ public class MiniRSA {
         }
 
         System.out.printf("Called with X:%d and largest Prime:%d\n", x, primes.get(primes.size() - 1));
-        // This part of the code shouldn't even be called.
+        // This part of the code shouldn't even be called (unless this method is called directly)
         for (long i = primes.get(primes.size() - 1); i * i <= x; i += 2) {
             System.out.printf("I: %d\n", i);
             if (x % i == 0) return false;
@@ -98,6 +148,14 @@ public class MiniRSA {
         return true;
     }
 
+    /**
+     * Gets the next long in a range... Somehow java doesn't have this.
+     * Reference: https://stackoverflow.com/questions/2546078/java-random-long-number-in-0-x-n-range
+     *
+     * @param rng
+     * @param n
+     * @return
+     */
     private static long nextLong(Random rng, long n) {
         long bits, val;
         do {

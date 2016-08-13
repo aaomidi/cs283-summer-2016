@@ -1,4 +1,4 @@
-package com.aaomidi.jchat.minirsa;
+package com.aaomidi.jchat.minirsa.api;
 
 import lombok.Getter;
 import lombok.ToString;

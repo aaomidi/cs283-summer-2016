@@ -17,6 +17,7 @@ public class ChatServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         ByteBuf buf = ctx.alloc().buffer();
+        // Initial message.
         buf.writeCharSequence(
                 String.format("EHLO:3\r\nHello and welcome to chatting with Amir!.\r\nMy public key is:\r\n%d\r\n%d\r\nMessages from this point on will be encrypted.\r\n", instance.getRsa().getPubKey()[0], instance.getRsa().getPubKey()[1]),
                 CharsetUtil.UTF_8);

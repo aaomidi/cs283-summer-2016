@@ -1,7 +1,7 @@
 package com.aaomidi.jchat.cracker;
 
 
-import com.aaomidi.jchat.minirsa.RSA;
+import com.aaomidi.jchat.minirsa.api.RSA;
 
 import java.util.Scanner;
 

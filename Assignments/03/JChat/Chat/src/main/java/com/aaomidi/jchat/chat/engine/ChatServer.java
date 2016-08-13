@@ -23,6 +23,11 @@ public class ChatServer {
         }
     }
 
+    /**
+     * Connect and create a server.
+     *
+     * @throws Exception
+     */
     public void create() throws Exception {
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
