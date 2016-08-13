@@ -1,31 +1,31 @@
 package com.aaomidi.jchat.cracker;
 
 
-import com.aaomidi.jchat.minirsa.MiniRSA;
+import com.aaomidi.jchat.minirsa.RSA;
 
 import java.util.Scanner;
 
-public class Cracker {
-    Scanner s = new Scanner(System.in);
-    long e; // prime to m
-    long d; // modular inverse of e mod m
+public class Main {
+    private Scanner s = new Scanner(System.in);
+    private long e, c;
+    private RSA rsa;
 
-    long a; // prime 1
-    long b; // prime 2
-
-    long c; // a * b
-    long m; // a-1 * b-1
-
-    long totient;
-
-    public static void main(String[] args) {
-        Cracker cracker = new Cracker();
-        cracker.start();
+    public static void main(String... args) {
+        Main main = new Main(args);
     }
 
-    private void start() {
+    public Main(String... args) {
+        start(args);
+    }
+
+    private void start(String... args) {
         try {
-            getPublicKey();
+            if (args.length != 2) {
+                getPublicKey();
+            } else {
+                e = Long.valueOf(args[0]);
+                c = Long.valueOf(args[1]);
+            }
             crackPrivateKey();
             decrypt();
         } catch (Exception ex) {
@@ -51,44 +51,38 @@ public class Cracker {
             }
         }
 
-        this.a = i;
-        this.b = this.c / i;
-        this.m = (a - 1) * (b - 1);
-        this.d = MiniRSA.modInverse(e, m);
-        this.totient = MiniRSA.totient(m);
+        rsa = new RSA(i, c, e);
 
         if (!isCracked) {
             System.out.println("Uuuuuuh no?");
             System.exit(0);
         } else {
-            System.out.println("a was " + this.a + " b was " + this.b);
-            System.out.println("The totient is " + this.totient);
-            System.out.println("D was found to be " + this.d);
+            System.out.printf("%s\n", rsa.toString());
         }
     }
 
     private void getPublicKey() {
         System.out.println("Enter the public key value (e):");
         String pubKey = s.nextLine();
-        this.e = Long.parseLong(pubKey);
+        this.e = Long.valueOf(pubKey);
 
-        System.out.println("Enter the c that goes with the public key:");
+        System.out.println("Enter the c that goes with the public key: ");
         String cString = s.nextLine();
-        this.c = Long.parseLong(cString);
+        this.c = Long.valueOf(cString);
     }
 
     private void decrypt() {
         String line;
         while (true) {
-            System.out.println("Enter a number to decrypt or quit to exit:");
+            System.out.println("Enter a number to decrypt or quit to exit: ");
             line = s.nextLine();
             if (line.equals("quit")) {
                 break;
             }
             long num = Long.parseLong(line);
-            char decryptedChar = (char) MiniRSA.modulo(num, d, c);
-            System.out.println("This char is decrypted to " + decryptedChar);
-            System.out.println("This letter is " + (int) decryptedChar);
+            char decryptedChar = rsa.decChar(num);
+            System.out.printf("This char is decrypted to %s%n", decryptedChar);
+            System.out.printf("This letter is %d%n", (int) decryptedChar);
         }
         System.out.println("Done");
     }

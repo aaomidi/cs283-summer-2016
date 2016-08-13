@@ -9,7 +9,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class Message {
     @Getter
-    private final List<Integer> message;
+    private final List<Long> message;
 
     public String decrypt(RSA rsa) {
         return rsa.dec(message);

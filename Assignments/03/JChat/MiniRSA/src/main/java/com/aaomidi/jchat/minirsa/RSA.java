@@ -1,5 +1,6 @@
 package com.aaomidi.jchat.minirsa;
 
+import lombok.Getter;
 import lombok.ToString;
 
 import java.util.LinkedList;
@@ -7,20 +8,26 @@ import java.util.List;
 
 @ToString
 public class RSA {
+    @Getter
     private final long prime1;
+    @Getter
     private final long prime2;
 
+    @Getter
     private final long c;
+    @Getter
     private final long m;
+    @Getter
     private final long e;
+    @Getter
     private final long d;
 
-    public static int encChar(char ch, int[] pubKey) {
-        return (int) MiniRSA.endecrypt(ch, pubKey[0], pubKey[1]);
+    public static long encChar(char ch, int[] pubKey) {
+        return MiniRSA.endecrypt(ch, pubKey[0], pubKey[1]);
     }
 
-    public static List<Integer> enc(String str, int[] pubKey) {
-        List<Integer> list = new LinkedList<>();
+    public static List<Long> enc(String str, int[] pubKey) {
+        List<Long> list = new LinkedList<>();
         for (char ch : str.toCharArray()) {
             list.add(encChar(ch, pubKey));
         }
@@ -43,9 +50,19 @@ public class RSA {
         this.d = MiniRSA.modInverse(e, m);
     }
 
-    public String dec(List<Integer> list) {
+    public RSA(long a, long c, long e) {
+        this.prime1 = a;
+        this.prime2 = c / a;
+
+        this.c = c;
+        this.m = (prime1 - 1) * (prime2 - 1);
+        this.e = e;
+        this.d = MiniRSA.modInverse(e, m);
+    }
+
+    public String dec(List<Long> list) {
         String str = "";
-        for (int i : list) {
+        for (long i : list) {
             str += decChar(i);
         }
         return str;
