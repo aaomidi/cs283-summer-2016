@@ -33,14 +33,14 @@ public class ChatServer {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new ChatServerHandler());
+                        ch.pipeline().addLast(new ChatServerHandler(instance));
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
 
-        ChannelFuture f = b.bind(instance.getLoadedConfiguration().getPortNumber()).sync();
+        ChannelFuture f = b.bind(instance.getLoadedConfiguration().getBindNumber()).sync();
 
 
     }

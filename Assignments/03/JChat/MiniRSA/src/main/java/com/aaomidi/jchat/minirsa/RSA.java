@@ -15,6 +15,18 @@ public class RSA {
     private final long e;
     private final long d;
 
+    public static int encChar(char ch, int[] pubKey) {
+        return (int) MiniRSA.endecrypt(ch, pubKey[0], pubKey[1]);
+    }
+
+    public static List<Integer> enc(String str, int[] pubKey) {
+        List<Integer> list = new LinkedList<>();
+        for (char ch : str.toCharArray()) {
+            list.add(encChar(ch, pubKey));
+        }
+        return list;
+    }
+
     /**
      * Create an RSA out of two primes.
      *
@@ -27,23 +39,8 @@ public class RSA {
 
         this.c = prime1 * prime2;
         this.m = (prime1 - 1) * (prime2 - 1);
-        //this.e = MiniRSA.coprime(m);
-        this.e = 451;
+        this.e = MiniRSA.coprime(m);
         this.d = MiniRSA.mod_inverse(e, m);
-    }
-
-    public int encChar(char ch) {
-        long[] publicKey = getPubKey();
-        return (int) MiniRSA.endecrypt(ch, e, c);
-    }
-
-    public List<Integer> enc(String str) {
-        List<Integer> list = new LinkedList<>();
-
-        for (char ch : str.toCharArray()) {
-            list.add(encChar(ch));
-        }
-        return list;
     }
 
     public String dec(List<Integer> list) {

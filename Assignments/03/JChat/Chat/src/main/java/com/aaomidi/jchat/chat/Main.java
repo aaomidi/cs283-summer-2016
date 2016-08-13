@@ -1,10 +1,14 @@
 package com.aaomidi.jchat.chat;
 
 import com.aaomidi.jchat.chat.data.Configuration;
+import com.aaomidi.jchat.chat.data.Message;
 import com.aaomidi.jchat.chat.engine.ChatClient;
 import com.aaomidi.jchat.chat.engine.ChatServer;
+import com.aaomidi.jchat.minirsa.MiniRSA;
 import com.aaomidi.jchat.minirsa.RSA;
+import com.google.gson.Gson;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +19,14 @@ public class Main {
     private Configuration loadedConfiguration;
     private ChatClient chatClient;
     private ChatServer chatServer;
+    // Other person's public key
+    @Getter
+    @Setter
+    private int[] otherPublicKey = new int[2];
+    @Getter
+    private RSA rsa;
+    @Getter
+    private Gson gson = new Gson();
 
     public static void main(String... args) {
         new Main(args);
@@ -22,14 +34,22 @@ public class Main {
 
     public Main(String... args) {
         final Main instance = this;
-        loadConfig();
+        Integer bindNumber = Integer.valueOf(args[0]);
+        Integer portNumber = Integer.valueOf(args[1]);
 
-        test();
+        Integer v1 = Integer.valueOf(args[2]);
+        Integer v2 = Integer.valueOf(args[3]);
+        loadConfig(bindNumber, portNumber);
+
+        rsa = new RSA(MiniRSA.nthPrime(v1), MiniRSA.nthPrime(v2));
+
         chatServer = new ChatServer(instance);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         chatClient = new ChatClient(instance);
-
-        chatClient.sendMessage("Hi babe\n");
-
 
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         for (; ; ) {
@@ -43,28 +63,16 @@ public class Main {
                 break;
             }
 
-            // Sends the received line to the server.
-            chatClient.sendMessage(line);
+            Message msg = new Message(RSA.enc(line, otherPublicKey));
+
+            chatClient.sendMessage(gson.toJson(msg, Message.class));
         }
 
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void test() {
-        RSA rsa = new RSA(43, 61);
-
-        System.out.println(rsa.dec(rsa.enc("Hello?\nYou're cute!\tKek")));
     }
 
 
-    public void loadConfig() {
+    public void loadConfig(int bindNumber, int portNumber) {
         // TODO: Load configuration from a file.
-        this.loadedConfiguration = new Configuration(7451);
+        this.loadedConfiguration = new Configuration(bindNumber, portNumber);
     }
 }

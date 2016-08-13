@@ -12,6 +12,7 @@
     <modules>
         <module>Chat</module>
         <module>MiniRSA</module>
+        <module>Cracker</module>
     </modules>
 
     <dependencies>
@@ -25,6 +26,12 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>4.1.4.Final</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.7</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -61,7 +68,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
                 <configuration>
-                    <outputDirectory>${parent.relativePath}/../jar/</outputDirectory>
+                    <outputDirectory>${project.parent.relativePath}/../jar/</outputDirectory>
                 </configuration>
             </plugin>
             <plugin>
