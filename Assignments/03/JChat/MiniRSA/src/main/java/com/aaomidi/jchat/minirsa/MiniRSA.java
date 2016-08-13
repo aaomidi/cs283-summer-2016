@@ -40,7 +40,7 @@ public class MiniRSA {
         }
     }
 
-    public static long mod_inverse(long base, long m) {
+    public static long modInverse(long base, long m) {
         long exp = totient(m) - 1;
         return modulo(base, exp, m);
     }

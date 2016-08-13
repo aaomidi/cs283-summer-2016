@@ -13,4 +13,11 @@
     <groupId>com.aaomidi.jchat.cracker</groupId>
     <artifactId>Cracker</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.aaomidi.jchat</groupId>
+            <artifactId>MiniRSA</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
 </project>

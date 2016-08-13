@@ -40,7 +40,7 @@ public class RSA {
         this.c = prime1 * prime2;
         this.m = (prime1 - 1) * (prime2 - 1);
         this.e = MiniRSA.coprime(m);
-        this.d = MiniRSA.mod_inverse(e, m);
+        this.d = MiniRSA.modInverse(e, m);
     }
 
     public String dec(List<Integer> list) {
