@@ -3,27 +3,15 @@
 TEAM = NOBODY
 VERSION = 1
 DRIVER = ./sdriver.pl
-TSH = ./shell.o
-TSHREF = ./tshref.ref
+TSH = ./tsh
+TSHREF = ./tshref
 TSHARGS = "-p"
 CC = gcc
 CFLAGS = -Wall -O2
-FILES = $(TSH) ./myspin.o ./mysplit.o ./mystop.o ./myint.o
+FILES = $(TSH) ./myspin ./mysplit ./mystop ./myint
 
-all: myspin mysplit mystop myint shell
+all: $(FILES)
 
-myspin:
-	$(CC) tsh.c $(CFLAGS) -o myspin.o
-mysplit:
-	$(CC) tsh.c $(CFLAGS) -o mysplit.o
-mystop:
-	$(CC) tsh.c $(CFLAGS) -o mystop.o
-myint:
-	$(CC) tsh.c $(CFLAGS) -o myint.o
-
-
-shell:
-	$(CC) tsh.c $(CFLAGS) -o $(TSH)
 
 ##################
 # Regression tests
@@ -100,6 +88,6 @@ rtest16:
 
 # clean up
 clean:
-	rm -f *.o
+	rm -f $(FILES) *.o *~
 
 

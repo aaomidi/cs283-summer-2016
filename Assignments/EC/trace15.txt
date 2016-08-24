@@ -2,20 +2,20 @@
 # trace15.txt - Putting it all together
 #
 
-/bin/echo tsh> ./bogus.o
-./bogus.o
+/bin/echo tsh> ./bogus
+./bogus
 
-/bin/echo tsh> ./myspin.o 10
-./myspin.o 10
+/bin/echo tsh> ./myspin 10
+./myspin 10
 
 SLEEP 2
 INT
 
-/bin/echo -e tsh> ./myspin.o 3 \046
-./myspin.o 3 &
+/bin/echo -e tsh> ./myspin 3 \046
+./myspin 3 &
 
-/bin/echo -e tsh> ./myspin.o 4 \046
-./myspin.o 4 &
+/bin/echo -e tsh> ./myspin 4 \046
+./myspin 4 &
 
 /bin/echo tsh> jobs
 jobs

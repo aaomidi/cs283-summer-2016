@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <limits.h>
+#include <sys/fcntl.h>
 
 /* Misc manifest constants */
 #define MAXLINE    1024   /* max line size */
@@ -59,6 +60,8 @@ struct job_t jobs[MAXJOBS]; /* The job list */
 void printJIDPID(int jid, int pid, char *cmdline);
 
 void toLower(char *arg);
+
+int fdIsValid(int fd);
 
 void eval(char *cmdline);
 
@@ -205,7 +208,7 @@ int parseline(const char *cmdline, char **argv) {
         delim = strchr(buf, ' ');
     }
 
-    while (delim) {
+    while (delim != '\0') {
         argv[argc++] = buf;
         *delim = '\0';
         buf = delim + 1;
@@ -241,6 +244,10 @@ void toLower(char *arg) {
     for (i = 0; arg[i] != '\0'; i++) {
         arg[i] = tolower(arg[i]);
     }
+}
+
+int fdIsValid(int fd) {
+    return fcntl(fd, F_GETFD) != -1 || errno != EBADF;
 }
 
 /**
@@ -296,11 +303,11 @@ void eval(char *cmdline) {
     if (NULL == (args = malloc(MAXARGS * sizeof(char *)))) unix_error("Memory allocation failed..\n");
 
     int isBackgroundJob = parseline(cmdline, args);
-
     if (args[0] == NULL) { // Ignore and move on
         free(args);
         return;
     }
+
 
     if (builtin_cmd(args)) return;
 
@@ -309,6 +316,31 @@ void eval(char *cmdline) {
     sigaddset(&signalSet, SIGCHLD);
     sigprocmask(SIG_BLOCK, &signalSet, NULL);
 
+    char **arg = args;
+    char **args2 = NULL;
+    int inFileDescriptor = 0, outFileDescriptor = 0;
+    int pipeFileDescriptors[2] = {-1, -1};
+    /* Scan over args and check for redirects and pipes. */
+    while (*arg) {
+        if (0 == strcmp(*arg, "<")) {
+            if (0 > (inFileDescriptor = open(*(arg + 1), O_RDONLY))) {
+                unix_error("Redirection to file, failed.");
+            }
+            *arg = NULL;
+        } else if (0 == strcmp(*arg, ">")) {
+            if (0 > (outFileDescriptor = open(*(arg + 1), O_WRONLY | O_CREAT | O_TRUNC, 0766))) {
+                unix_error("Redirection to file, failed.");
+            }
+            *arg = NULL;
+        } else if (0 == strcmp(*arg, "|")) {
+            if (pipe(pipeFileDescriptors) < 0) {
+                unix_error("Pipe, failed.");
+            }
+            *arg = NULL;
+            args2 = arg + 1;
+        }
+        arg++;
+    }
     pid_t processID = fork();
 
     if (processID < 0) unix_error("Process forking, failed.");
@@ -317,6 +349,24 @@ void eval(char *cmdline) {
         sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
 
         setpgid(0, 0);
+
+        if (inFileDescriptor > 0) {
+            // Puts the file input as the standard input so the other file can read it.
+            dup2(inFileDescriptor, STDIN_FILENO);
+            close(inFileDescriptor);
+        }
+
+        if (pipeFileDescriptors[1] > 0) {
+            dup2(pipeFileDescriptors[1], STDOUT_FILENO);
+            close(pipeFileDescriptors[0]);
+            close(pipeFileDescriptors[1]);
+        } else if (outFileDescriptor > 0) {
+            // Puts the file as the standard output so the process can write to it.
+            dup2(outFileDescriptor, STDOUT_FILENO);
+            close(outFileDescriptor);
+        }
+
+
         int status = execve(args[0], args, 0);
 
         if (errno != 0) {
@@ -330,16 +380,53 @@ void eval(char *cmdline) {
         exit(status);
     }
 
+    /* If a pipe exists. */
+    if (args2 != NULL) {
+        pid_t pid2 = fork();
+        if (pid2 < 0) unix_error("Process forking, failed.");
+
+        if (pid2 == 0) {
+            sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
+            // Group it up with original
+            setpgid(processID, processID);
+
+            dup2(pipeFileDescriptors[0], STDIN_FILENO);
+
+            close(pipeFileDescriptors[0]);
+            close(pipeFileDescriptors[1]);
+            if (outFileDescriptor > 0) {
+                dup2(outFileDescriptor, STDOUT_FILENO);
+                close(outFileDescriptor);
+            }
+            int status = execve(args2[0], args2, 0);
+
+            if (errno != 0) {
+                if (errno == ENOENT || errno == ENOEXEC) {
+                    printf("%s: %s\n", args2[0], "Command not found");
+                } else {
+                    printf("%s: %s (def)\n", args2[0], strerror(errno));
+                }
+            }
+            exit(status);
+
+        }
+    }
+    /** Flush the output **/
+    if (inFileDescriptor > 0 && fdIsValid(inFileDescriptor)) close(inFileDescriptor);
+    if (outFileDescriptor > 0 && fdIsValid(outFileDescriptor)) close(outFileDescriptor);
+
+    if (pipeFileDescriptors[0] > 0 && fdIsValid(pipeFileDescriptors[0])) close(pipeFileDescriptors[0]);
+    if (pipeFileDescriptors[1] > 0 && fdIsValid(pipeFileDescriptors[1])) close(pipeFileDescriptors[1]);
+
+    sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
+
     if (isBackgroundJob) {
         addjob(jobs, processID, BG, cmdline);
 
         struct job_t *job = getjobpid(jobs, processID);
         printJIDPID(job->jid, job->pid, cmdline);
-        sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
-
     } else {
         addjob(jobs, processID, FG, cmdline);
-        sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
         waitfg(processID); // Block until finished.
     }
 
@@ -448,7 +535,9 @@ void sigchld_handler(int sig) {
         job->state = ST;
 
     } else {
-        job->state = UNDEF;
+        if (job != NULL) {
+            job->state = UNDEF;
+        }
         if (WIFSIGNALED(status)) {
             printf("Job [%d] (%d) terminated by signal %d\n", job->jid, pid, WTERMSIG(status));
 
