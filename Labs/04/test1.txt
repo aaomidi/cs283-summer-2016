@@ -1,0 +1,31 @@
+Starting no locks:
+Run 1:
+	Global variable size: 1825692 (10000000)
+	Time taken: 187500 ms
+Run 2:
+	Global variable size: 1657517 (10000000)
+	Time taken: 187500 ms
+Run 3:
+	Global variable size: 1852368 (10000000)
+	Time taken: 156250 ms
+Run 4:
+	Global variable size: 2159517 (10000000)
+	Time taken: 171875 ms
+Run 5:
+	Global variable size: 1522687 (10000000)
+	Time taken: 218750 ms
+Run 6:
+	Global variable size: 1431127 (10000000)
+	Time taken: 218750 ms
+Run 7:
+	Global variable size: 1586172 (10000000)
+	Time taken: 203125 ms
+Run 8:
+	Global variable size: 1766039 (10000000)
+	Time taken: 156250 ms
+Run 9:
+	Global variable size: 1444659 (10000000)
+	Time taken: 218750 ms
+Run 10:
+	Global variable size: 1366499 (10000000)
+	Time taken: 125000 ms

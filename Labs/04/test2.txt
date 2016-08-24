@@ -1,0 +1,31 @@
+Starting with locks
+Run 1:
+	Global variable size: 10000000 (10000000)
+	Time taken: 3 seconds
+Run 2:
+	Global variable size: 10000000 (10000000)
+	Time taken: 2 seconds
+Run 3:
+	Global variable size: 10000000 (10000000)
+	Time taken: 3 seconds
+Run 4:
+	Global variable size: 10000000 (10000000)
+	Time taken: 3 seconds
+Run 5:
+	Global variable size: 10000000 (10000000)
+	Time taken: 4 seconds
+Run 6:
+	Global variable size: 10000000 (10000000)
+	Time taken: 3 seconds
+Run 7:
+	Global variable size: 10000000 (10000000)
+	Time taken: 4 seconds
+Run 8:
+	Global variable size: 10000000 (10000000)
+	Time taken: 3 seconds
+Run 9:
+	Global variable size: 10000000 (10000000)
+	Time taken: 3 seconds
+Run 10:
+	Global variable size: 10000000 (10000000)
+	Time taken: 3 seconds
