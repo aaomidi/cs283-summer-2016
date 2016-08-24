@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <limits.h>
 
 /* Misc manifest constants */
 #define MAXLINE    1024   /* max line size */
@@ -231,6 +232,10 @@ int parseline(const char *cmdline, char **argv) {
     return bg;
 }
 
+/**
+ * Upper -> Lower casing
+ * @param arg
+ */
 void toLower(char *arg) {
     int i;
     for (i = 0; arg[i] != '\0'; i++) {
@@ -238,6 +243,12 @@ void toLower(char *arg) {
     }
 }
 
+/**
+ * Prints the specific style. Saves lines of code.
+ * @param jid
+ * @param pid
+ * @param cmdline
+ */
 void printJIDPID(int jid, int pid, char *cmdline) {
     printf("[%d] (%d) %s", jid, pid, cmdline);
 }
@@ -252,9 +263,13 @@ int builtin_cmd(char **argv) {
     }
 
     toLower(argv[0]); // Case insensitivity
+    if (0 == (strcmp(argv[0], "fg")) || 0 == (strcmp(argv[0], "bg"))) {
+        do_bgfg(argv);
+        return 1;
+    }
 
     if (0 == (strcmp(argv[0], "quit"))) {
-        exit(0);
+        exit(0); // EXIT_SUCCESS?
     }
 
     if (0 == (strcmp(argv[0], "jobs"))) {
@@ -262,13 +277,7 @@ int builtin_cmd(char **argv) {
         return 1;
     }
 
-    if (0 == (strcmp(argv[0], "fg")) || 0 == (strcmp(argv[0], "bg"))) {
-        do_bgfg(argv);
-        return 1;
-    }
-
-
-    return 0;     /* not a builtin command */
+    return 0;
 }
 
 /*
@@ -283,8 +292,6 @@ int builtin_cmd(char **argv) {
  * when we type ctrl-c (ctrl-z) at the keyboard.
 */
 void eval(char *cmdline) {
-
-
     char **args;
     if (NULL == (args = malloc(MAXARGS * sizeof(char *)))) unix_error("Memory allocation failed..\n");
 
@@ -297,17 +304,17 @@ void eval(char *cmdline) {
 
     if (builtin_cmd(args)) return;
 
-    sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGCHLD);
-    sigprocmask(SIG_BLOCK, &set, NULL);
+    sigset_t signalSet;
+    sigemptyset(&signalSet);
+    sigaddset(&signalSet, SIGCHLD);
+    sigprocmask(SIG_BLOCK, &signalSet, NULL);
 
     pid_t processID = fork();
 
     if (processID < 0) unix_error("Process forking, failed.");
 
     if (processID == 0) {
-        sigprocmask(SIG_UNBLOCK, &set, NULL);
+        sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
 
         setpgid(0, 0);
         int status = execve(args[0], args, 0);
@@ -328,11 +335,11 @@ void eval(char *cmdline) {
 
         struct job_t *job = getjobpid(jobs, processID);
         printJIDPID(job->jid, job->pid, cmdline);
-        sigprocmask(SIG_UNBLOCK, &set, NULL);
+        sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
 
     } else {
         addjob(jobs, processID, FG, cmdline);
-        sigprocmask(SIG_UNBLOCK, &set, NULL);
+        sigprocmask(SIG_UNBLOCK, &signalSet, NULL);
         waitfg(processID); // Block until finished.
     }
 
@@ -356,34 +363,23 @@ void do_bgfg(char **argv) {
         return;
     }
 
-
-    char *idChar = 0;
     int pid = 1;
 
-    if (*(argv[1]) == '%') {
+    char *stringStart;
+    if (*argv[1] == '%') {
         pid = 0;
-        idChar = argv[1] + 1;
+        stringStart = argv[1] + 1;
+    } else {
+        stringStart = argv[1];
     }
-    else {
-        idChar = argv[1];
+    char *stringEnd = NULL;
+
+    int id = 0;
+    id = (int) strtol(stringStart, &stringEnd, 10);
+    if (stringStart == stringEnd || id > INT_MAX || id < INT_MIN || *stringEnd != '\0') {
+        printf("%s command requires PID or %%jobid\n", isBG ? "bg" : "fg");
+        return;
     }
-
-    int id = 0, w = 1, i;
-
-    /* *
-     * This is a PITA, I had to literally read the string like this
-     * atoi doesn't check validity :(
-     * ლ(ʘ̆〰ʘ)ლ
-     * */
-    for (i = (int) (strlen(idChar) - 1); i >= 0; i--) {
-        if (idChar[i] < '0' || idChar[i] > '9') {
-            printf("%s command requires PID or %%jobid\n", isBG ? "bg" : "fg");
-            return;
-        }
-        id += w * (idChar[i] - '0');
-        w *= 10;
-    }
-
     struct job_t *job = ((pid) ? getjobpid(jobs, id) : getjobjid(jobs, id));
     if (job == NULL) {
         if (pid != 0) {
@@ -418,7 +414,7 @@ void do_bgfg(char **argv) {
  */
 void waitfg(pid_t pid) {
     while (pid == fgpid(jobs)) { // Until all jobs with that groupID have quit, keep looping.
-        sleep(5);
+        sleep(5); // Lets not let CPU hit 100%
     }
     return;
 }
@@ -447,9 +443,10 @@ void sigchld_handler(int sig) {
     struct job_t *job = getjobpid(jobs, pid);
 
     if (WIFSTOPPED(status)) {
+        printf("Job [%d] (%d) stopped by signal %d\n", job->jid, pid, SIGTSTP);
+
         job->state = ST;
 
-        printf("Job [%d] (%d) stopped by signal %d\n", job->jid, pid, SIGTSTP);
     } else {
         job->state = UNDEF;
         if (WIFSIGNALED(status)) {

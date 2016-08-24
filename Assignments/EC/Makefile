@@ -23,7 +23,7 @@ myint:
 
 
 shell:
-	$(CC) tsh.c $(CFLAGS) -o shell.o
+	$(CC) tsh.c $(CFLAGS) -o $(TSH)
 
 ##################
 # Regression tests
