@@ -312,12 +312,11 @@ void eval(char *cmdline) {
         setpgid(0, 0);
         int status = execve(args[0], args, 0);
 
-        if (status != 0) {
-            if (status == ENONET) {
+        if (errno != 0) {
+            if (errno == ENOENT || errno == ENOEXEC) {
                 printf("%s: %s\n", args[0], "Command not found");
-
             } else {
-                printf("%s: %s\n", args[0], strerror(errno));
+                printf("%s: %s (def)\n", args[0], strerror(errno));
             }
         }
 
@@ -346,12 +345,17 @@ void eval(char *cmdline) {
 void do_bgfg(char **argv) {
     if (argv[0] == NULL) return;
 
-    if (argv[1] == NULL) {
-        printf("ID unspecified.");
-        return;
-    }
     int isBG = 0;
     if (0 == strcmp(argv[0], "bg")) isBG = 1;
+
+    if (argv[1] == NULL) {
+        /*
+         * More error lines ┴┬┴┤( ͡° ͜ʖ├┬┴┬
+         */
+        printf("%s command requires PID or %%jobid argument\n", isBG ? "bg" : "fg");
+        return;
+    }
+
 
     char *idChar = 0;
     int pid = 1;
@@ -366,8 +370,14 @@ void do_bgfg(char **argv) {
 
     int id = 0, w = 1, i;
 
+    /* *
+     * This is a PITA, I had to literally read the string like this
+     * atoi doesn't check validity :(
+     * ლ(ʘ̆〰ʘ)ლ
+     * */
     for (i = (int) (strlen(idChar) - 1); i >= 0; i--) {
         if (idChar[i] < '0' || idChar[i] > '9') {
+            printf("%s command requires PID or %%jobid\n", isBG ? "bg" : "fg");
             return;
         }
         id += w * (idChar[i] - '0');
@@ -376,6 +386,11 @@ void do_bgfg(char **argv) {
 
     struct job_t *job = ((pid) ? getjobpid(jobs, id) : getjobjid(jobs, id));
     if (job == NULL) {
+        if (pid != 0) {
+            printf("(%d): No such process\n", id);
+        } else {
+            printf("%s: No such job\n", argv[1]);
+        }
         return;
     }
 
