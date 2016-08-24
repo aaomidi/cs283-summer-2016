@@ -17,4 +17,7 @@ It took me a little time to understand everything, but the lecture slides and th
 ## How to compile and use:
 
 `make all`
+
 `make test01` etc.
+
+Clean up remaining files using `make clean`
